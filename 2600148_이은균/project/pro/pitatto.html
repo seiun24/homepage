@@ -1,0 +1,989 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>피탓토 ピタッと</title>
+    <style>
+      :root {
+        --bg: #0b0b1a;
+        --fg: #f2f2ff;
+        --mut: #9a9ac0;
+        --acc: #39c5bb;
+        --card: #16162e;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family:
+          system-ui,
+          -apple-system,
+          "Noto Sans KR",
+          sans-serif;
+      }
+      :root {
+        padding-top: env(safe-area-inset-top, 0px);
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      #bga {
+        position: fixed;
+        inset: 0;
+        opacity: 0.35;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      #bga iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+      #bga {
+        background-size: 300% 300%;
+        animation: bgm 9s ease infinite;
+      }
+      #bga.themed {
+        opacity: 0.75;
+      }
+      #bga.t0 {
+        background-image: linear-gradient(120deg, #0b4b50, #5a1244, #0b4b50);
+      }
+      #bga.t1 {
+        background-image: linear-gradient(120deg, #2a1260, #123a7a, #2a1260);
+      }
+      #bga.t2 {
+        background-image: linear-gradient(120deg, #0e2250, #7a3a12, #0e2250);
+      }
+      #bga.gif {
+        background-size: cover !important;
+        background-position: center;
+        animation: none;
+      }
+      @keyframes bgm {
+        0% {
+          background-position: 0 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0 50%;
+        }
+      }
+      #pause {
+        position: absolute;
+        inset: 0;
+        background: rgba(5, 5, 20, 0.9);
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        z-index: 5;
+      }
+      #pause.on {
+        display: flex;
+      }
+      #gear {
+        position: absolute;
+        top: 30px;
+        right: 6px;
+        z-index: 4;
+        background: var(--card);
+        color: var(--fg);
+        border: 1px solid #3a3a60;
+        border-radius: 8px;
+        padding: 2px 8px;
+        cursor: pointer;
+      }
+      .scene {
+        position: relative;
+        z-index: 2;
+        min-height: 100%;
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px 16px;
+        gap: 14px;
+      }
+      .scene.on {
+        display: flex;
+      }
+      h1 {
+        margin: 8px 0 0;
+        font-size: 34px;
+        letter-spacing: 2px;
+        color: var(--acc);
+      }
+      .sub {
+        color: var(--mut);
+        font-size: 13px;
+        margin: 0;
+      }
+      .songs {
+        display: grid;
+        gap: 10px;
+        width: 100%;
+        max-width: 460px;
+      }
+      .song {
+        background: var(--card);
+        border: 2px solid transparent;
+        border-radius: 12px;
+        padding: 12px 14px;
+        cursor: pointer;
+        text-align: left;
+        color: var(--fg);
+        font: inherit;
+      }
+      .song.sel {
+        border-color: var(--acc);
+      }
+      .song b {
+        display: block;
+        font-size: 16px;
+      }
+      .song span {
+        font-size: 12px;
+        color: var(--mut);
+      }
+      .panel {
+        width: 100%;
+        max-width: 460px;
+        background: var(--card);
+        border-radius: 12px;
+        padding: 12px 14px;
+        display: grid;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .panel input[type="text"] {
+        width: 100%;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid #3a3a60;
+        background: #0e0e22;
+        color: var(--fg);
+      }
+      .panel input[type="range"] {
+        width: 100%;
+      }
+      button.go {
+        background: var(--acc);
+        color: #052;
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 28px;
+        font-size: 18px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      #game {
+        padding: 0;
+        justify-content: center;
+      }
+      #wrap {
+        position: relative;
+        width: min(100vw, 360px);
+        height: min(100vh, 640px);
+      }
+      canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+        background: rgba(8, 8, 24, 0.78);
+        border-left: 1px solid #2a2a50;
+        border-right: 1px solid #2a2a50;
+        touch-action: none;
+      }
+      #hud {
+        position: absolute;
+        top: 8px;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: space-between;
+        padding: 0 12px;
+        font-size: 13px;
+        pointer-events: none;
+      }
+      .res td {
+        padding: 3px 12px;
+      }
+      .res {
+        font-size: 16px;
+      }
+      .rank {
+        font-size: 64px;
+        font-weight: 800;
+        color: var(--acc);
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="bga"><div id="yt"></div></div>
+
+    <section id="lobby" class="scene on">
+      <h1>피탓토 ピタッと</h1>
+      <p class="sub">설치 없이 URL로 즐기는 4키 리듬 게임 · D F J K</p>
+      <div class="songs" id="songs"></div>
+      <div class="panel">
+        <label
+          >유튜브 URL (선택 · 선택한 곡의 BGA로 사용)
+          <input
+            type="text"
+            id="url"
+            placeholder="https://www.youtube.com/watch?v=..."
+        /></label>
+        <button
+          type="button"
+          class="song snd"
+          style="text-align: center"
+        ></button>
+        <label
+          >배경 GIF 업로드 (선택한 곡에 적용)
+          <input type="file" id="gif" accept="image/gif,image/*"
+        /></label>
+        <label
+          >노트 속도: <b id="spv">2.5</b>배속 (게임 중 ↑/↓ 키로 조절)
+          <input type="range" id="sp" min="1" max="5" step="0.5" value="2.5"
+        /></label>
+      </div>
+      <button class="go" id="start">게임 시작</button>
+      <p class="sub" id="note"></p>
+    </section>
+
+    <section id="game" class="scene">
+      <div id="wrap">
+        <canvas id="cv" width="360" height="640"></canvas>
+        <div id="hud"><span id="hs">0</span><span id="hsp"></span></div>
+        <button id="gear" title="ESC">⚙</button>
+        <button
+          class="snd"
+          title="M"
+          style="
+            position: absolute;
+            top: 56px;
+            right: 6px;
+            z-index: 4;
+            background: var(--card);
+            color: var(--fg);
+            border: 1px solid #3a3a60;
+            border-radius: 8px;
+            padding: 2px 8px;
+            cursor: pointer;
+          "
+        ></button>
+        <div id="pause">
+          <h2 style="margin: 0">설정 (ESC)</h2>
+          <label
+            >노트 속도: <b id="pspv">2.5</b>배속<br /><input
+              type="range"
+              id="psp"
+              min="1"
+              max="5"
+              step="0.5"
+              value="2.5" /></label
+          ><button
+            class="go snd"
+            style="background: #3a3a60; color: #fff"
+          ></button
+          ><button class="go" id="presume">계속하기</button
+          ><button
+            class="go"
+            id="pquit"
+            style="background: #ff5c7a; color: #fff"
+          >
+            나가기
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section id="result" class="scene">
+      <h1>RESULT</h1>
+      <p class="rank" id="rk">S</p>
+      <p id="rt" class="sub"></p>
+      <table class="res" id="rtb"></table>
+      <button class="go" id="again">로비로</button>
+    </section>
+
+    <script>
+      // 곡 데이터: yt에 유튜브 영상 ID를 넣으면 BGA/음원으로 재생됩니다. 비어 있으면 내부 시계(메트로놈) 모드.
+      var SONGS = [
+        {
+          title: "初音ミクの消失",
+          artist: "cosMo@暴走P · 하츠네 미쿠",
+          bpm: 245,
+          rep: 3,
+          theme: 0,
+          gif: "",
+          yt: "",
+          chart: [
+            [2000, 0],
+            [2245, 1],
+            [2490, 2],
+            [2735, 3],
+            [2980, 2],
+            [3470, 1],
+            [3715, 0],
+            [3960, 1],
+            [4205, 2],
+            [4450, 3],
+            [4940, 0],
+            [5185, 2],
+            [5430, 1],
+            [5920, 3],
+            [6165, 2],
+            [6410, 0],
+            [6655, 1],
+            [6900, 3],
+            [7390, 2],
+            [7635, 0],
+            [7880, 3],
+            [8370, 1],
+            [8615, 2],
+            [8860, 0],
+            [9350, 1],
+            [9595, 3],
+            [9840, 0],
+            [10085, 2],
+            [10330, 1],
+            [10820, 3],
+          ],
+        },
+        {
+          title: "Pretender",
+          artist: "Official髭男dism",
+          bpm: 92,
+          rep: 2,
+          theme: 1,
+          gif: "",
+          yt: "TQ8WlA2GXbk",
+          chart: [
+            [2000, 1],
+            [2652, 2],
+            [3304, 0],
+            [3956, 3],
+            [4608, 1],
+            [5260, 2],
+            [5912, 0],
+            [6238, 3],
+            [6564, 2],
+            [7216, 1],
+            [7868, 0],
+            [8520, 2],
+            [9172, 3],
+            [9824, 1],
+            [10476, 0],
+            [11128, 2],
+            [11454, 3],
+            [11780, 1],
+            [12432, 2],
+            [13084, 0],
+            [13736, 1],
+            [14388, 3],
+            [15040, 2],
+            [15692, 0],
+            [16344, 1],
+            [16670, 2],
+            [16996, 3],
+            [17648, 0],
+            [18300, 2],
+            [18952, 1],
+            [19604, 3],
+            [20256, 0],
+          ],
+        },
+        {
+          title: "Subtitle",
+          artist: "Official髭男dism",
+          bpm: 76,
+          rep: 3,
+          theme: 2,
+          gif: "",
+          yt: "",
+          chart: [
+            [2000, 0],
+            [2790, 1],
+            [3580, 3],
+            [4370, 2],
+            [4765, 1],
+            [5160, 0],
+            [5950, 2],
+            [6740, 3],
+            [7530, 1],
+            [7925, 2],
+            [8320, 0],
+            [9110, 3],
+            [9900, 1],
+            [10690, 2],
+            [11085, 0],
+            [11480, 3],
+            [12270, 1],
+            [13060, 2],
+            [13850, 0],
+            [14245, 1],
+            [14640, 3],
+            [15430, 2],
+            [16220, 0],
+            [17010, 3],
+          ],
+        },
+      ];
+      var $ = function (i) {
+        return document.getElementById(i);
+      };
+      var sel = 0,
+        speed = 2.5,
+        scene = "lobby";
+
+      function show(id) {
+        ["lobby", "game", "result"].forEach(function (s) {
+          $(s).classList.toggle("on", s === id);
+        });
+        scene = id;
+      }
+      function renderSongs() {
+        $("songs").innerHTML = "";
+        SONGS.forEach(function (s, i) {
+          var b = document.createElement("button");
+          b.className = "song" + (i === sel ? " sel" : "");
+          b.innerHTML =
+            "<b>" +
+            s.title +
+            "</b><span>" +
+            s.artist +
+            " · BPM " +
+            s.bpm +
+            (s.yt ? " · YouTube 연동" : " · 내부 시계 모드") +
+            "</span>";
+          b.onclick = function () {
+            sel = i;
+            $("url").value = s.yt ? "https://youtu.be/" + s.yt : "";
+            renderSongs();
+          };
+          $("songs").appendChild(b);
+        });
+      }
+      renderSongs();
+      $("sp").oninput = function () {
+        speed = +this.value;
+        $("spv").textContent = speed;
+      };
+
+      function ytId(u) {
+        var m = (u || "").match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
+        return m ? m[1] : "";
+      }
+
+      // ---- 채보 생성 (BPM 기반 시드 난수) ----
+      function chart(s) {
+        // 곡별 [t(ms), lane] 배열을 rep회 반복(홀수 회차는 좌우 반전)
+        var L = s.chart,
+          span = L[L.length - 1][0] - L[0][0] + 1500,
+          o = [];
+        for (var r = 0; r < (s.rep || 1); r++)
+          L.forEach(function (n, i) {
+            var l = r % 2 ? 3 - n[1] : n[1],
+              t = n[0] + r * span,
+              nx = L[i + 1];
+            o.push({ t: t, l: l, done: false });
+            if (nx && nx[0] - n[0] >= 320)
+              o.push({
+                t: t + (nx[0] - n[0]) / 2,
+                l: (l + 2 + (i % 2)) % 4,
+                done: false,
+              });
+            if (i % 3 === 0 && r > 0)
+              o.push({ t: t, l: (l + 1 + (i % 2)) % 4, done: false });
+          });
+        return o;
+      }
+      function chartOld(s) {
+        var seed = s.bpm * 7919,
+          r = function () {
+            seed = (seed * 16807) % 2147483647;
+            return seed / 2147483647;
+          };
+        var step = (60000 / s.bpm) * (s.bpm > 150 ? 1 : 0.5),
+          out = [],
+          last = -1;
+        for (var t = 2000; t < s.dur * 1000 - 1500; t += step) {
+          if (r() < 0.62) {
+            var l = Math.floor(r() * 4);
+            if (l === last && r() < 0.6) l = (l + 1) % 4;
+            last = l;
+            out.push({ t: t, l: l, done: false });
+          }
+          if (r() < 0.1) {
+            out.push({ t: t, l: (last + 2) % 4, done: false });
+          }
+        }
+        return out;
+      }
+
+      // ---- YouTube ----
+      var player = null,
+        ytReady = false,
+        ytTried = false;
+      function loadYT(id, cb) {
+        var timer = setTimeout(function () {
+          cb(false);
+        }, 3500);
+        function make() {
+          try {
+            if (player) {
+              player.destroy();
+              $("bga").innerHTML = '<div id="yt"></div>';
+            }
+            player = new YT.Player("yt", {
+              videoId: id,
+              playerVars: { controls: 0, disablekb: 1, playsinline: 1, rel: 0 },
+              events: {
+                onReady: function () {
+                  clearTimeout(timer);
+                  cb(true);
+                },
+                onStateChange: function (e) {
+                  if (e.data === 0 && mode === "yt" && playing) finish();
+                },
+                onError: function () {
+                  clearTimeout(timer);
+                  cb(false);
+                },
+              },
+            });
+          } catch (e) {
+            clearTimeout(timer);
+            cb(false);
+          }
+        }
+        if (window.YT && YT.Player) make();
+        else {
+          window.onYouTubeIframeAPIReady = make;
+          if (!ytTried) {
+            ytTried = true;
+            var s = document.createElement("script");
+            s.src = "https://www.youtube.com/iframe_api";
+            s.onerror = function () {
+              clearTimeout(timer);
+              cb(false);
+            };
+            document.head.appendChild(s);
+          }
+        }
+      }
+
+      // ---- 게임 ----
+      var cv = $("cv"),
+        ctx = cv.getContext("2d");
+      var LX = [30, 120, 210, 300].map(function (x) {
+          return x - 30;
+        }),
+        LW = 90,
+        HIT = 540,
+        KEYS = { d: 0, f: 1, j: 2, k: 3 };
+      var hp = 200,
+        failed = false,
+        sfx = true,
+        endT = 0,
+        mode = "clock",
+        playing = false,
+        t0 = 0,
+        notes = [],
+        song = null,
+        sc,
+        combo,
+        maxc,
+        cnt,
+        flash = [0, 0, 0, 0],
+        jmsg = { t: 0, s: "", c: "" },
+        raf = 0,
+        AC = null,
+        nextBeat = 0;
+
+      function nowMs() {
+        return mode === "yt" && player && player.getCurrentTime
+          ? player.getCurrentTime() * 1000
+          : performance.now() - t0;
+      }
+
+      $("start").onclick = function () {
+        song = SONGS[sel];
+        var id = ytId($("url").value) || song.yt;
+        try {
+          AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+        } catch (e) {}
+        notes = chart(song);
+        endT = notes[notes.length - 1].t + 2500;
+        hp = 200;
+        failed = false;
+        sc = 0;
+        combo = 0;
+        maxc = 0;
+        cnt = { P: 0, G: 0, B: 0, M: 0 };
+        $("start").disabled = true;
+        $("note").textContent = "준비 중…";
+        var go = function (ok) {
+          $("start").disabled = false;
+          $("note").textContent = ok
+            ? ""
+            : "유튜브를 불러올 수 없어 내부 시계 모드로 진행합니다.";
+          mode = ok ? "yt" : "clock";
+          setBg(ok);
+          setSound(sfx);
+          show("game");
+          begin();
+        };
+        if (id) loadYT(id, go);
+        else go(false);
+      };
+      function begin() {
+        playing = false;
+        var c = 3,
+          cd = setInterval(function () {
+            jmsg = {
+              t: performance.now() + 900,
+              s: String(c || "GO"),
+              c: "#fff",
+            };
+            if (c-- < 0) {
+              clearInterval(cd);
+              playing = true;
+              nextBeat = 0;
+              t0 = performance.now();
+              if (mode === "yt") player.playVideo();
+              loop();
+            }
+          }, 700);
+        jmsg = { t: performance.now() + 900, s: "3", c: "#fff" };
+        c = 2;
+        draw(-9999);
+      }
+      function finish() {
+        if (!playing) return;
+        playing = false;
+        cancelAnimationFrame(raf);
+        try {
+          if (player && player.stopVideo) player.stopVideo();
+        } catch (e) {}
+        var tot = notes.length || 1,
+          acc = (cnt.P + cnt.G * 0.7 + cnt.B * 0.3) / tot,
+          rk =
+            acc > 0.95
+              ? "S"
+              : acc > 0.85
+                ? "A"
+                : acc > 0.7
+                  ? "B"
+                  : acc > 0.5
+                    ? "C"
+                    : "D";
+        $("rk").textContent = failed ? "FAIL" : rk;
+        $("rt").textContent = song.title + " · " + speed + "배속";
+        $("rtb").innerHTML =
+          "<tr><td>점수</td><td>" +
+          sc +
+          "</td></tr><tr><td>최대 콤보</td><td>" +
+          maxc +
+          "</td></tr><tr><td>PERFECT</td><td>" +
+          cnt.P +
+          "</td></tr><tr><td>GREAT</td><td>" +
+          cnt.G +
+          "</td></tr><tr><td>BAD</td><td>" +
+          cnt.B +
+          "</td></tr><tr><td>MISS</td><td>" +
+          cnt.M +
+          "</td></tr>";
+        show("result");
+      }
+      $("again").onclick = function () {
+        show("lobby");
+        $("note").textContent = "";
+      };
+
+      // ---- 소리 ----
+      function setSound(on) {
+        sfx = on;
+        [].forEach.call(document.querySelectorAll(".snd"), function (b) {
+          b.textContent = on ? "🔊 소리 ON" : "🔇 소리 OFF";
+        });
+        try {
+          if (player && player.mute) {
+            if (on) player.unMute();
+            else player.mute();
+          }
+        } catch (e) {}
+      }
+      [].forEach.call(document.querySelectorAll(".snd"), function (b) {
+        b.onclick = function () {
+          this.blur();
+          setSound(!sfx);
+        };
+      });
+      setSound(true);
+      function beep(f, d) {
+        if (!sfx || !AC) return;
+        var o = AC.createOscillator(),
+          g = AC.createGain();
+        o.frequency.value = f;
+        g.gain.value = 0.05;
+        o.connect(g);
+        g.connect(AC.destination);
+        o.start();
+        o.stop(AC.currentTime + d);
+      }
+      // ---- 배경 / 일시정지 ----
+      function setBg(ok) {
+        var b = $("bga");
+        b.style.backgroundImage = "";
+        b.className = "t" + (song.theme || 0) + (ok ? "" : " themed");
+        if (song.gif) {
+          b.style.backgroundImage = "url(" + song.gif + ")";
+          b.className += " gif themed";
+        }
+      }
+      $("gif").onchange = function () {
+        var f = this.files[0];
+        if (!f) return;
+        var r = new FileReader();
+        r.onload = function () {
+          SONGS[sel].gif = r.result;
+          $("note").textContent = "선택한 곡에 배경 GIF를 적용했습니다.";
+        };
+        r.readAsDataURL(f);
+      };
+      var paused = false,
+        pAt = 0;
+      function togglePause() {
+        if (paused) {
+          paused = false;
+          $("pause").classList.remove("on");
+          playing = true;
+          if (mode === "yt") {
+            try {
+              player.playVideo();
+            } catch (e) {}
+          } else t0 = performance.now() - pAt;
+          loop();
+        } else if (playing) {
+          pAt = nowMs();
+          playing = false;
+          paused = true;
+          cancelAnimationFrame(raf);
+          if (mode === "yt") {
+            try {
+              player.pauseVideo();
+            } catch (e) {}
+          }
+          $("psp").value = speed;
+          $("pspv").textContent = speed;
+          $("pause").classList.add("on");
+        }
+      }
+      function quitGame() {
+        paused = false;
+        playing = false;
+        cancelAnimationFrame(raf);
+        try {
+          if (player && player.stopVideo) player.stopVideo();
+        } catch (e) {}
+        $("pause").classList.remove("on");
+        show("lobby");
+        $("note").textContent = "";
+      }
+      $("gear").onclick = function () {
+        this.blur();
+        togglePause();
+      };
+      $("presume").onclick = function () {
+        this.blur();
+        togglePause();
+      };
+      $("pquit").onclick = quitGame;
+      $("psp").oninput = function () {
+        speed = +this.value;
+        $("pspv").textContent = speed;
+        $("sp").value = speed;
+        $("spv").textContent = speed;
+      };
+
+      function judge(d) {
+        var a = Math.abs(d),
+          r;
+        if (a <= 35) r = ["PERFECT", "P", "#39c5bb", 1000];
+        else if (a <= 75) r = ["GREAT", "G", "#ffd34d", 600];
+        else r = ["BAD", "B", "#ff8a5c", 200];
+        cnt[r[1]]++;
+        combo++;
+        if (r[1] === "P") hp = Math.min(200, hp + 5);
+        if (r[1] === "B") hp -= 10;
+        maxc = Math.max(maxc, combo);
+        sc += r[3] + Math.min(combo, 100) * 5;
+        jmsg = { t: performance.now() + 500, s: r[0], c: r[2] };
+      }
+      function press(l) {
+        if (!playing) return;
+        flash[l] = 1;
+        var now = nowMs(),
+          best = null;
+        notes.forEach(function (n) {
+          if (!n.done && n.l === l) {
+            var d = n.t - now;
+            if (
+              Math.abs(d) <= 110 &&
+              (!best || Math.abs(d) < Math.abs(best.t - now))
+            )
+              best = n;
+          }
+        });
+        if (best) {
+          best.done = true;
+          best.hit = true;
+          judge(best.t - now);
+          beep(1200, 0.03);
+        }
+      }
+      function tick(now) {
+        // 내부 시계 모드 메트로놈
+        if (mode !== "clock" || !AC) return;
+        var iv = (60000 / song.bpm) * (song.bpm > 150 ? 2 : 1);
+        while (nextBeat <= now) {
+          if (nextBeat >= 0 && sfx) {
+            var o = AC.createOscillator(),
+              g = AC.createGain();
+            o.frequency.value = 880;
+            g.gain.value = 0.04;
+            o.connect(g);
+            g.connect(AC.destination);
+            o.start();
+            o.stop(AC.currentTime + 0.04);
+          }
+          nextBeat += iv;
+        }
+      }
+      function loop() {
+        if (!playing) return;
+        var now = nowMs();
+        tick(now);
+        notes.forEach(function (n) {
+          if (!n.done && n.t < now - 110) {
+            n.done = true;
+            cnt.M++;
+            combo = 0;
+            hp -= 10;
+            jmsg = { t: performance.now() + 500, s: "MISS", c: "#ff5c7a" };
+          }
+        });
+        draw(now);
+        if (hp <= 0) {
+          failed = true;
+          return finish();
+        }
+        if (now > endT) return finish();
+        raf = requestAnimationFrame(loop);
+      }
+      function draw(now) {
+        var pps = 300 * speed;
+        ctx.clearRect(0, 0, 360, 640);
+        var cols = ["#ff7aa8", "#7ad0ff", "#7ad0ff", "#ff7aa8"];
+        for (var i = 0; i < 4; i++) {
+          var x = i * 90;
+          ctx.fillStyle = "rgba(255,255,255," + (i % 2 ? 0.03 : 0.06) + ")";
+          ctx.fillRect(x, 0, 90, 640);
+          if (flash[i] > 0) {
+            var g = ctx.createLinearGradient(0, HIT - 260, 0, HIT);
+            g.addColorStop(0, "rgba(57,197,187,0)");
+            g.addColorStop(1, "rgba(57,197,187," + flash[i] * 0.55 + ")");
+            ctx.fillStyle = g;
+            ctx.fillRect(x, HIT - 260, 90, 260);
+            flash[i] = Math.max(0, flash[i] - 0.06);
+          }
+        }
+        ctx.fillStyle = "#39c5bb";
+        ctx.fillRect(0, HIT, 360, 4);
+        notes.forEach(function (n) {
+          if (n.done) return;
+          var y = HIT - ((n.t - now) / 1000) * pps;
+          if (y < -20 || y > 660) return;
+          ctx.fillStyle = cols[n.l];
+          ctx.fillRect(n.l * 90 + 6, y - 16, 78, 32);
+          ctx.fillStyle = "rgba(255,255,255,.55)";
+          ctx.fillRect(n.l * 90 + 6, y - 16, 78, 4);
+        });
+        ctx.font = "700 16px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#cfeeee";
+        ["D", "F", "J", "K"].forEach(function (k, i) {
+          ctx.fillText(k, i * 90 + 45, HIT + 34);
+        });
+        if (performance.now() < jmsg.t) {
+          ctx.font = "800 26px system-ui";
+          ctx.fillStyle = jmsg.c;
+          ctx.fillText(jmsg.s, 180, 300);
+        }
+        if (combo > 1) {
+          ctx.font = "800 40px system-ui";
+          ctx.fillStyle = "rgba(255,255,255,.85)";
+          ctx.fillText(combo, 180, 200);
+          ctx.font = "12px system-ui";
+          ctx.fillText("COMBO", 180, 222);
+        }
+        ctx.fillStyle = "rgba(255,255,255,.15)";
+        ctx.fillRect(12, 32, 240, 10);
+        ctx.fillStyle = hp > 60 ? "#39c5bb" : "#ff5c7a";
+        ctx.fillRect(12, 32, (240 * Math.max(0, hp)) / 200, 10);
+        ctx.font = "11px system-ui";
+        ctx.textAlign = "left";
+        ctx.fillStyle = "#fff";
+        ctx.fillText("HP " + Math.max(0, hp) + "/200", 14, 58);
+        ctx.textAlign = "center";
+        $("hs").textContent = "SCORE " + sc;
+        $("hsp").textContent = "SPEED x" + speed.toFixed(1);
+      }
+      addEventListener("keydown", function (e) {
+        if (scene !== "game") return;
+        if (e.key === "Escape") {
+          togglePause();
+          return;
+        }
+        if (e.key === "m" || e.key === "M") {
+          setSound(!sfx);
+          return;
+        }
+        if (e.repeat || paused) return;
+        var k = e.key.toLowerCase();
+        if (k in KEYS) {
+          press(KEYS[k]);
+          e.preventDefault();
+        } else if (e.key === "ArrowUp") {
+          speed = Math.min(5, speed + 0.5);
+          e.preventDefault();
+        } else if (e.key === "ArrowDown") {
+          speed = Math.max(1, speed - 0.5);
+          e.preventDefault();
+        }
+      });
+      // 터치 입력
+      cv.addEventListener("pointerdown", function (e) {
+        var r = cv.getBoundingClientRect();
+        press(
+          Math.min(
+            3,
+            Math.max(0, Math.floor(((e.clientX - r.left) / r.width) * 4)),
+          ),
+        );
+      });
+    </script>
+  </body>
+</html>

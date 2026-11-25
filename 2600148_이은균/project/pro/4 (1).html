@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>피탓토 (ピタッと) - Web 4K Rhythm Game</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+KR:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-color: #0b0e14;
+        --card-bg: #151a23;
+        --card-hover: #1f2633;
+        --accent-cyan: #00f0ff;
+        --accent-pink: #ff0055;
+        --accent-purple: #7000ff;
+        --accent-yellow: #ffb700;
+        --text-main: #f0f4f8;
+        --text-dim: #8a99ad;
+        --lane-1: #00f0ff;
+        --lane-2: #ff0055;
+        --lane-3: #ff0055;
+        --lane-4: #00f0ff;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-main);
+        font-family: "Noto Sans KR", sans-serif;
+        overflow: hidden;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      /* Navbar (Rhythm Plus Style) */
+      header {
+        height: 60px;
+        background: rgba(11, 14, 20, 0.9);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        backdrop-filter: blur(10px);
+        z-index: 100;
+        position: relative;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 1.4rem;
+        color: var(--accent-cyan);
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+      }
+
+      .brand span {
+        font-size: 0.9rem;
+        color: var(--accent-pink);
+        padding: 2px 6px;
+        background: rgba(ff, 0, 85, 0.15);
+        border-radius: 4px;
+        border: 1px solid var(--accent-pink);
+      }
+
+      .nav-tabs {
+        display: flex;
+        gap: 1.5rem;
+        list-style: none;
+        font-family: "Orbitron", sans-serif;
+        font-size: 0.9rem;
+      }
+
+      .nav-tabs li {
+        color: var(--text-dim);
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 6px 12px;
+        border-radius: 6px;
+      }
+
+      .nav-tabs li.active,
+      .nav-tabs li:hover {
+        color: var(--text-main);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .nav-tabs li.active {
+        border-bottom: 2px solid var(--accent-cyan);
+      }
+
+      /* Lobby Screen */
+      #lobby-screen {
+        height: calc(100vh - 60px);
+        display: flex;
+        flex-direction: column;
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .lobby-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+
+      .lobby-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .speed-selector {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--card-bg);
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .speed-selector button {
+        background: rgba(255, 255, 255, 0.1);
+        border: none;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .speed-selector button:hover {
+        background: var(--accent-cyan);
+        color: black;
+      }
+
+      .song-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.5rem;
+        overflow-y: auto;
+        padding-right: 8px;
+      }
+
+      .song-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.25s ease;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .song-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--accent-cyan);
+        box-shadow: 0 8px 24px rgba(0, 240, 255, 0.2);
+        background: var(--card-hover);
+      }
+
+      .card-thumb {
+        height: 160px;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+      .card-thumb::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          180deg,
+          transparent 40%,
+          var(--card-bg) 100%
+        );
+      }
+
+      .card-info {
+        padding: 1.2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .song-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .song-artist {
+        font-size: 0.85rem;
+        color: var(--text-dim);
+      }
+
+      .song-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 10px;
+        font-size: 0.8rem;
+        font-family: "Orbitron", sans-serif;
+        color: var(--accent-cyan);
+      }
+
+      /* Game Screen */
+      #game-screen {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: black;
+        z-index: 200;
+      }
+
+      #youtube-bg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0.45;
+        pointer-events: none;
+        object-fit: cover;
+      }
+
+      .game-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        justify-content: center;
+        background: linear-gradient(
+          90deg,
+          rgba(11, 14, 20, 0.85) 0%,
+          rgba(11, 14, 20, 0.3) 50%,
+          rgba(11, 14, 20, 0.85) 100%
+        );
+      }
+
+      .game-header {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 70px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 3rem;
+        z-index: 10;
+        background: linear-gradient(
+          180deg,
+          rgba(0, 0, 0, 0.8) 0%,
+          transparent 100%
+        );
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .header-score-box {
+        display: flex;
+        gap: 3rem;
+      }
+
+      .stat-box {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .stat-label {
+        font-size: 0.75rem;
+        color: var(--text-dim);
+      }
+
+      .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-cyan);
+      }
+
+      /* Stage / Lane Engine */
+      .stage {
+        width: 440px;
+        height: 100vh;
+        background: rgba(15, 20, 28, 0.85);
+        border-left: 2px solid rgba(0, 240, 255, 0.3);
+        border-right: 2px solid rgba(0, 240, 255, 0.3);
+        position: relative;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+        display: flex;
+      }
+
+      .lane {
+        flex: 1;
+        height: 100%;
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        position: relative;
+      }
+
+      .lane:last-child {
+        border-right: none;
+      }
+
+      /* Key Receptors */
+      .key-receptors {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 120px;
+        display: flex;
+        background: linear-gradient(
+          360deg,
+          rgba(0, 240, 255, 0.15) 0%,
+          transparent 100%
+        );
+        border-top: 3px solid var(--accent-cyan);
+      }
+
+      .receptor {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        padding-bottom: 20px;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 900;
+        font-size: 1.4rem;
+        color: rgba(255, 255, 255, 0.7);
+        transition: background 0.05s;
+      }
+
+      .receptor.active {
+        background: rgba(0, 240, 255, 0.3);
+        color: white;
+        text-shadow: 0 0 10px white;
+      }
+
+      .note {
+        position: absolute;
+        width: 90%;
+        left: 5%;
+        height: 18px;
+        border-radius: 4px;
+        box-shadow: 0 0 12px currentColor;
+      }
+
+      .note.lane-0 {
+        background: var(--lane-1);
+        color: var(--lane-1);
+      }
+      .note.lane-1 {
+        background: var(--lane-2);
+        color: var(--lane-2);
+      }
+      .note.lane-2 {
+        background: var(--lane-3);
+        color: var(--lane-3);
+      }
+      .note.lane-3 {
+        background: var(--lane-4);
+        color: var(--lane-4);
+      }
+
+      /* Judgement Feedback */
+      .judgement-display {
+        position: absolute;
+        top: 55%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        text-align: center;
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .judgement-text {
+        font-size: 2.5rem;
+        font-weight: 900;
+        font-style: italic;
+        text-shadow: 0 0 15px currentColor;
+        animation: pop 0.15s ease-out;
+      }
+
+      .combo-text {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: white;
+        margin-top: 5px;
+      }
+
+      @keyframes pop {
+        0% {
+          transform: scale(0.6);
+          opacity: 0;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      /* Result Modal */
+      #result-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(15px);
+        z-index: 300;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .result-card {
+        background: var(--card-bg);
+        border: 1px solid var(--accent-cyan);
+        border-radius: 16px;
+        width: 480px;
+        padding: 2.5rem;
+        box-shadow: 0 0 50px rgba(0, 240, 255, 0.2);
+        text-align: center;
+      }
+
+      .result-rank {
+        font-family: "Orbitron", sans-serif;
+        font-size: 5rem;
+        font-weight: 900;
+        color: var(--accent-yellow);
+        text-shadow: 0 0 20px var(--accent-yellow);
+        margin: 1rem 0;
+      }
+
+      .result-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 2rem;
+        font-family: "Orbitron", sans-serif;
+      }
+
+      .btn-primary {
+        background: var(--accent-cyan);
+        color: black;
+        font-family: "Orbitron", sans-serif;
+        font-weight: 700;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        transition: all 0.2s;
+      }
+
+      .btn-primary:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 20px var(--accent-cyan);
+      }
+
+      #error-banner {
+        display: none;
+        position: absolute;
+        top: 80px;
+        background: rgba(255, 0, 85, 0.8);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        z-index: 20;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">PITATTO <span>4K WEB</span></div>
+      <ul class="nav-tabs">
+        <li class="active">Song Select</li>
+        <li>My Studio</li>
+        <li>Rankings</li>
+      </ul>
+    </header>
+
+    <!-- 뮤직 로비 -->
+    <div id="lobby-screen">
+      <div class="lobby-header">
+        <div class="lobby-title">💿 Select Track</div>
+        <div class="speed-selector">
+          <span style="color: var(--text-dim); font-size: 0.85rem">SPEED</span>
+          <button onclick="adjustSpeed(-0.5)">-</button>
+          <span
+            id="speed-val"
+            style="width: 40px; text-align: center; color: var(--accent-cyan)"
+            >2.5x</span
+          >
+          <button onclick="adjustSpeed(0.5)">+</button>
+        </div>
+      </div>
+
+      <div class="song-grid" id="song-list"></div>
+    </div>
+
+    <!-- 게임 화면 -->
+    <div id="game-screen">
+      <div id="error-banner">
+        유튜브 재생 차단 오류 감지: 오디오 폴백 모드로 실행됩니다.
+      </div>
+      <div id="youtube-player-container">
+        <div id="youtube-bg"></div>
+      </div>
+
+      <div class="game-overlay">
+        <div class="game-header">
+          <div>
+            <h2 id="playing-title" style="font-size: 1.1rem">Track Title</h2>
+            <p
+              id="playing-artist"
+              style="font-size: 0.8rem; color: var(--text-dim)"
+            >
+              Artist
+            </p>
+          </div>
+          <div class="header-score-box">
+            <div class="stat-box">
+              <span class="stat-label">SCORE</span>
+              <span class="stat-value" id="score-val">000000</span>
+            </div>
+            <div class="stat-box">
+              <span class="stat-label">ACCURACY</span>
+              <span class="stat-value" id="acc-val">100.0%</span>
+            </div>
+          </div>
+          <button
+            class="btn-primary"
+            style="
+              background: rgba(255, 0, 85, 0.2);
+              color: var(--accent-pink);
+              border: 1px solid var(--accent-pink);
+            "
+            onclick="exitGame()"
+          >
+            포기하기
+          </button>
+        </div>
+
+        <div class="stage">
+          <div class="lane" id="lane-0"></div>
+          <div class="lane" id="lane-1"></div>
+          <div class="lane" id="lane-2"></div>
+          <div class="lane" id="lane-3"></div>
+
+          <div class="key-receptors">
+            <div class="receptor" id="rec-0">D</div>
+            <div class="receptor" id="rec-1">F</div>
+            <div class="receptor" id="rec-2">J</div>
+            <div class="receptor" id="rec-3">K</div>
+          </div>
+
+          <div class="judgement-display">
+            <div class="judgement-text" id="judge-text"></div>
+            <div class="combo-text" id="combo-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 결과 화면 -->
+    <div id="result-modal">
+      <div class="result-card">
+        <h2 style="font-family: Orbitron">STAGE CLEAR</h2>
+        <div class="result-rank" id="res-rank">S</div>
+        <div class="result-stats">
+          <div>PERFECT: <span id="res-perf">0</span></div>
+          <div>GREAT: <span id="res-great">0</span></div>
+          <div>BAD: <span id="res-bad">0</span></div>
+          <div>MISS: <span id="res-miss">0</span></div>
+          <div>MAX COMBO: <span id="res-combo">0</span></div>
+          <div>SCORE: <span id="res-score">0</span></div>
+        </div>
+        <button class="btn-primary" onclick="closeResult()">
+          로비로 돌아가기
+        </button>
+      </div>
+    </div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+      // 임베드 안전 비디오 ID 데이터베이스
+      const SONGS = [
+        {
+          id: "pretender",
+          title: "Pretender",
+          artist: "Official HIGE DANdism",
+          ytId: "tOQ_pEsnP0U", // 외부 임베드 가능 커버/가사 ID
+          bpm: 92,
+          cover: "https://img.youtube.com/vi/tOQ_pEsnP0U/hqdefault.jpg",
+        },
+        {
+          id: "miku_disappearance",
+          title: "하츠네 미쿠의 소실 (初音ミクの消失)",
+          artist: "cosMo@폭주P",
+          ytId: "2I3v0iTo3kY",
+          bpm: 240,
+          cover: "https://img.youtube.com/vi/2I3v0iTo3kY/hqdefault.jpg",
+        },
+        {
+          id: "yoruni_kakeru",
+          title: "밤을 달리다 (夜に駆ける)",
+          artist: "YOASOBI",
+          ytId: "x8VYWazR5mE",
+          bpm: 130,
+          cover: "https://img.youtube.com/vi/x8VYWazR5mE/hqdefault.jpg",
+        },
+      ];
+
+      let currentSpeed = 2.5;
+      let selectedSong = null;
+      let player = null;
+      let audioCtx = null;
+      let gameLoopReq = null;
+      let gameStartTime = 0;
+      let isFallbackMode = false;
+
+      // 게임 변수
+      let notes = [];
+      let score = 0;
+      let combo = 0;
+      let maxCombo = 0;
+      let stats = { perfect: 0, great: 0, bad: 0, miss: 0 };
+      let totalNotes = 0;
+
+      const KEYS = ["KeyD", "KeyF", "KeyJ", "KeyK"];
+
+      // 초기화
+      window.addEventListener("DOMContentLoaded", () => {
+        renderLobby();
+        initAudioCtx();
+      });
+
+      function initAudioCtx() {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContext();
+      }
+
+      function adjustSpeed(delta) {
+        currentSpeed = Math.min(Math.max(1.0, currentSpeed + delta), 5.0);
+        document.getElementById("speed-val").innerText =
+          currentSpeed.toFixed(1) + "x";
+      }
+
+      function renderLobby() {
+        const container = document.getElementById("song-list");
+        container.innerHTML = SONGS.map(
+          (song) => `
+        <div class="song-card" onclick="startGame('${song.id}')">
+          <div class="card-thumb" style="background-image: url('${song.cover}')"></div>
+          <div class="card-info">
+            <div class="song-title">${song.title}</div>
+            <div class="song-artist">${song.artist}</div>
+            <div class="song-meta">
+              <span>BPM ${song.bpm}</span>
+              <span>4KEYS</span>
+            </div>
+          </div>
+        </div>
+      `,
+        ).join("");
+      }
+
+      // 유튜브 API 준비
+      function onYouTubeIframeAPIReady() {
+        // API 로드 완료
+      }
+
+      function startGame(songId) {
+        selectedSong = SONGS.find((s) => s.id === songId);
+        if (!selectedSong) return;
+
+        if (audioCtx && audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        document.getElementById("lobby-screen").style.display = "none";
+        document.getElementById("game-screen").style.display = "block";
+        document.getElementById("playing-title").innerText = selectedSong.title;
+        document.getElementById("playing-artist").innerText =
+          selectedSong.artist;
+        document.getElementById("error-banner").style.display = "none";
+
+        resetGameState();
+        generateNotes();
+        loadYouTubePlayer(selectedSong.ytId);
+      }
+
+      function resetGameState() {
+        score = 0;
+        combo = 0;
+        maxCombo = 0;
+        stats = { perfect: 0, great: 0, bad: 0, miss: 0 };
+        isFallbackMode = false;
+        updateUI();
+      }
+
+      function loadYouTubePlayer(videoId) {
+        const container = document.getElementById("youtube-player-container");
+        container.innerHTML = '<div id="youtube-bg"></div>';
+
+        const origin = window.location.protocol.startsWith("http")
+          ? window.location.origin
+          : "https://www.youtube-nocookie.com";
+
+        player = new YT.Player("youtube-bg", {
+          videoId: videoId,
+          host: "https://www.youtube-nocookie.com",
+          playerVars: {
+            autoplay: 1,
+            controls: 0,
+            disablekb: 1,
+            modestbranding: 1,
+            rel: 0,
+            enablejsapi: 1,
+            origin: origin,
+          },
+          events: {
+            onReady: (e) => {
+              e.target.playVideo();
+              gameStartTime = performance.now();
+              startGameLoop();
+            },
+            onStateChange: (e) => {
+              if (e.data === YT.PlayerState.ENDED) {
+                endGame();
+              }
+            },
+            onError: (e) => {
+              // 오류 150, 153 등 유튜브 차단 예외 처리
+              console.warn("YouTube Player Error code:", e.data);
+              triggerFallbackMode();
+            },
+          },
+        });
+      }
+
+      function triggerFallbackMode() {
+        isFallbackMode = true;
+        document.getElementById("error-banner").style.display = "block";
+        gameStartTime = performance.now();
+        startGameLoop();
+      }
+
+      function generateNotes() {
+        notes = [];
+        const duration = 90; // 90초 플레이 타임 생성
+        const interval = 60 / selectedSong.bpm;
+
+        for (let time = 2.0; time < duration; time += interval) {
+          // 랜덤 키 배치
+          const lane = Math.floor(Math.random() * 4);
+          notes.push({
+            lane: lane,
+            time: time,
+            hit: false,
+            missed: false,
+            el: null,
+          });
+        }
+        totalNotes = notes.length;
+      }
+
+      function getCurrentTime() {
+        if (
+          !isFallbackMode &&
+          player &&
+          typeof player.getCurrentTime === "function"
+        ) {
+          try {
+            return player.getCurrentTime();
+          } catch (e) {
+            return (performance.now() - gameStartTime) / 1000;
+          }
+        }
+        return (performance.now() - gameStartTime) / 1000;
+      }
+
+      function startGameLoop() {
+        const loop = () => {
+          const currentTime = getCurrentTime();
+          updateNotes(currentTime);
+          gameLoopReq = requestAnimationFrame(loop);
+        };
+        gameLoopReq = requestAnimationFrame(loop);
+      }
+
+      function updateNotes(currentTime) {
+        const speedPixel = currentSpeed * 400; // 배속 계산
+        const receptorY = window.innerHeight - 120; // 판정선 높이
+
+        notes.forEach((note) => {
+          if (note.hit) return;
+
+          const timeDiff = note.time - currentTime;
+          const noteY = receptorY - timeDiff * speedPixel;
+
+          // 화면 표출 범위
+          if (noteY > -50 && noteY < window.innerHeight) {
+            if (!note.el) {
+              const el = document.createElement("div");
+              el.className = `note lane-${note.lane}`;
+              document.getElementById(`lane-${note.lane}`).appendChild(el);
+              note.el = el;
+            }
+            note.el.style.top = `${noteY}px`;
+          }
+
+          // MISS 판정 (판정선을 너무 많이 지나쳤을 때)
+          if (timeDiff < -0.15 && !note.missed && !note.hit) {
+            note.missed = true;
+            if (note.el) note.el.remove();
+            registerJudgement("MISS");
+          }
+        });
+
+        // 전체 노트 완료 시 자동 종료
+        if (notes.every((n) => n.hit || n.missed)) {
+          setTimeout(endGame, 1500);
+        }
+      }
+
+      // Key Handler
+      window.addEventListener("keydown", (e) => {
+        const idx = KEYS.indexOf(e.code);
+        if (idx !== -1 && !e.repeat) {
+          document.getElementById(`rec-${idx}`).classList.add("active");
+          playHitSound();
+          checkJudgement(idx);
+        }
+      });
+
+      window.addEventListener("keyup", (e) => {
+        const idx = KEYS.indexOf(e.code);
+        if (idx !== -1) {
+          document.getElementById(`rec-${idx}`).classList.remove("active");
+        }
+      });
+
+      function checkJudgement(lane) {
+        const currentTime = getCurrentTime();
+        const targetNote = notes.find(
+          (n) => n.lane === lane && !n.hit && !n.missed,
+        );
+
+        if (!targetNote) return;
+
+        const diff = Math.abs(targetNote.time - currentTime);
+
+        if (diff < 0.04) {
+          processHit(targetNote, "PERFECT", 1000);
+        } else if (diff < 0.08) {
+          processHit(targetNote, "GREAT", 700);
+        } else if (diff < 0.12) {
+          processHit(targetNote, "BAD", 300);
+        }
+      }
+
+      function processHit(note, result, pts) {
+        note.hit = true;
+        if (note.el) note.el.remove();
+        score += pts + combo * 10;
+        registerJudgement(result);
+      }
+
+      function registerJudgement(type) {
+        const judgeEl = document.getElementById("judge-text");
+        const comboEl = document.getElementById("combo-text");
+
+        judgeEl.innerText = type;
+
+        if (type === "PERFECT") {
+          judgeEl.style.color = "var(--accent-cyan)";
+          stats.perfect++;
+          combo++;
+        } else if (type === "GREAT") {
+          judgeEl.style.color = "var(--accent-yellow)";
+          stats.great++;
+          combo++;
+        } else if (type === "BAD") {
+          judgeEl.style.color = "var(--accent-purple)";
+          stats.bad++;
+          combo = 0;
+        } else {
+          judgeEl.style.color = "var(--accent-pink)";
+          stats.miss++;
+          combo = 0;
+        }
+
+        if (combo > maxCombo) maxCombo = combo;
+        comboEl.innerText = combo > 0 ? `${combo} COMBO` : "";
+
+        updateUI();
+      }
+
+      function updateUI() {
+        document.getElementById("score-val").innerText = String(score).padStart(
+          6,
+          "0",
+        );
+        const processed = stats.perfect + stats.great + stats.bad + stats.miss;
+        const acc =
+          processed > 0
+            ? (((stats.perfect + stats.great * 0.7) / processed) * 100).toFixed(
+                1,
+              )
+            : "100.0";
+        document.getElementById("acc-val").innerText = `${acc}%`;
+      }
+
+      function playHitSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(
+          100,
+          audioCtx.currentTime + 0.05,
+        );
+        gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.05);
+      }
+
+      function endGame() {
+        cancelAnimationFrame(gameLoopReq);
+        if (player && player.stopVideo) player.stopVideo();
+
+        const total = stats.perfect + stats.great + stats.bad + stats.miss;
+        const acc =
+          total > 0 ? ((stats.perfect + stats.great * 0.7) / total) * 100 : 0;
+        let rank = "F";
+
+        if (acc >= 95) rank = "S";
+        else if (acc >= 85) rank = "A";
+        else if (acc >= 75) rank = "B";
+        else if (acc >= 60) rank = "C";
+
+        document.getElementById("res-rank").innerText = rank;
+        document.getElementById("res-perf").innerText = stats.perfect;
+        document.getElementById("res-great").innerText = stats.great;
+        document.getElementById("res-bad").innerText = stats.bad;
+        document.getElementById("res-miss").innerText = stats.miss;
+        document.getElementById("res-combo").innerText = maxCombo;
+        document.getElementById("res-score").innerText = score;
+
+        document.getElementById("result-modal").style.display = "flex";
+      }
+
+      function closeResult() {
+        document.getElementById("result-modal").style.display = "none";
+        exitGame();
+      }
+
+      function exitGame() {
+        cancelAnimationFrame(gameLoopReq);
+        if (player && player.stopVideo) player.stopVideo();
+        document.getElementById("game-screen").style.display = "none";
+        document.getElementById("lobby-screen").style.display = "flex";
+
+        // 노트 청소
+        document.querySelectorAll(".note").forEach((n) => n.remove());
+      }
+    </script>
+  </body>
+</html>

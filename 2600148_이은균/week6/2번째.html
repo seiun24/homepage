@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>회원가입</title>
+  </head>
+  <body>
+    <h1>동아리 가입 신청</h1>
+    <form>
+      <p><strong>이름</strong></p>
+      <input type="text" name="이름" />
+      <br />
+      <p><strong>이메일</strong></p>
+      <input type="email" name="이메일" />
+      <br />
+      <p><strong>학번</strong></p>
+      <input type="number" name="학번" />
+      <br />
+      <p><strong>비밀번호</strong></p>
+      <input type="password" name="비밀번호" />
+      <br />
+      <p><strong>파일</strong></p>
+      <input type="file" name="파일" />
+      <br />
+      <p><strong>컬러</strong></p>
+      <input type="color" name="컬러" />
+      <br />
+      <label for="학과칸"><strong>학과</strong></label>
+      <br />
+      <select id="학과칸" name="학과">
+        <option value="">-- 선택하세요 --</option>
+        <option value="컴퓨터정보공학과">컴퓨터정보공학과</option>
+        <option value="소프트웨어학과">소프트웨어학과</option>
+        <option value="세이운스카이">세이운스카이</option>
+        <option value="하늘을태우는멸망의빛">하늘을태우는멸망의빛</option>
+        <option value="칠성탈혼퇴">칠성탈혼퇴</option>
+      </select>
+      <br />
+      <p><strong>학년</strong></p>
+      <label for="r1"
+        ><input type="radio" id="r1" name="학년" value="1" /> 1학년</label
+      >
+      <label for="r2"
+        ><input type="radio" id="r2" name="학년" value="2" /> 2학년</label
+      >
+      <label for="r3"
+        ><input type="radio" id="r3" name="학년" value="3" /> 3학년</label
+      >
+      <label for="r4"
+        ><input type="radio" id="r4" name="학년" value="4" /> 4학년</label
+      >
+      <br />
+      <p><strong>관심 분야 (여러 개 선택 가능)</strong></p>
+      <label for="ck1"
+        ><input type="checkbox" id="ck1" name="분야" value="기획" /> 기획</label
+      >
+      <label for="ck2"
+        ><input type="checkbox" id="ck2" name="분야" value="디자인" />
+        디자인</label
+      >
+      <label for="ck3"
+        ><input type="checkbox" id="ck3" name="분야" value="개발" checked />
+        개발</label
+      >
+      <label for="ck3"
+        ><input type="checkbox" id="ck3" name="분야" value="고양이" checked />
+        고양이</label
+      >
+      <br />
+      <p><strong>희망 면담일</strong></p>
+      <input type="date" name="연도-월-일" />
+      <br />
+      <p><strong>가입 동기</strong></p>
+      <textarea name=" " id="en1"></textarea>
+      <br />
+      <button type="submit">보내기</button>
+    </form>
+  </body>
+</html>

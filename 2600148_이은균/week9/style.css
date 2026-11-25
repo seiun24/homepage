@@ -1,0 +1,29 @@
+h1 {
+  color: blueviolet;
+  font-size: xxx-large;
+}
+
+nav {
+  color: brown;
+}
+
+h2 {
+  color: blueviolet;
+}
+
+h3 {
+  color: blueviolet;
+  font-size: xxx-large;
+}
+
+p {
+  color: red;
+  line-height: 3;
+}
+
+.highlight {
+  color: skyblue;
+  padding: 4px 8px;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+}
+
